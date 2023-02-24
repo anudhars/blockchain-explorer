@@ -224,7 +224,7 @@ describe('syncBlocks', () => {
 		const stubClient = setupClient();
 		const stubProcessBlockEvent = sinon.stub(sync, 'processBlockEvent');
 
-		await sync.syncBlocks(stubClient, VALID_CHANNEL_NAME, false);
+		await sync.syncBlocks(stubClient, VALID_CHANNEL_NAME, false,0);
 		expect(stubProcessBlockEvent.calledTwice).to.be.true;
 		stubProcessBlockEvent.restore();
 	});
@@ -235,7 +235,7 @@ describe('syncBlocks', () => {
 		stubProcessBlockEvent.onFirstCall().throws('Block already in processing');
 		stubError.reset();
 
-		await sync.syncBlocks(stubClient, VALID_CHANNEL_NAME, false);
+		await sync.syncBlocks(stubClient, VALID_CHANNEL_NAME, false,0);
 		expect(stubProcessBlockEvent.calledTwice).to.be.true;
 		expect(stubError.calledWith('Failed to process Block # 1')).to.be.true;
 		expect(stubError.calledWith('Failed to process Block # 2')).to.be.false;
