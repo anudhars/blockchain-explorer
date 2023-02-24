@@ -21,6 +21,7 @@ import { authCheckMiddleware } from './middleware/auth-check';
 import swaggerDocument from './swagger.json';
 import { ExplorerError } from './common/ExplorerError';
 import { localLoginStrategy } from './passport/local-login';
+import { metricRoutes } from './metrics/metricsRoutes';
 
 /**
  *
@@ -132,6 +133,9 @@ export class Explorer {
 			platform.initializeListener(explorerconfig.sync);
 
 			this.platforms.push(platform);
+
+			// Initializing metrics services
+			await metricRoutes(this.app, platform);
 		}
 	}
 
