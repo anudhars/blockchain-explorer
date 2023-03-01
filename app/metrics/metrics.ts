@@ -21,3 +21,9 @@ export const metric_channel_transaction_count = new client.Gauge({
 	help: 'metric_channel_txns: returns transaction count on a channel',
 	labelNames: ['channel', 'channel_genesis_hash']
 });
+
+export const metric_node_up = new client.Gauge({
+	name: 'metric_node_up',
+	help: 'metric_node_up: returns status of peer and orderer node',
+	labelNames: ['node', 'mspid']
+});

@@ -2,23 +2,18 @@
  *    SPDX-License-Identifier: Apache-2.0
  */
 
-import { helper } from '../common/helper';
 import { Proxy } from '../platform/fabric/Proxy';
 import { Platform } from '../platform/fabric/Platform';
 import {
 	metric_ledger_height,
 	metric_channel_height,
-	metric_channel_transaction_count
-} from './promMetrics';
+	metric_channel_transaction_count,
+	metric_node_up
+} from './metrics';
 
-const logger = helper.getLogger('dataFetcher');
 export async function collectMetrics(platform: Platform) {
-	logger.info('collecting metrics');
-
 	const proxy: Proxy = platform.getProxy();
 
-	// get the list of networks
-	// This will provide fabric network details from /app/platform/fabric/connection-profile/test-network.json
 	const networks = await proxy.networkList();
 	for (const network of networks) {
 		const network_id = network.id;
@@ -41,22 +36,29 @@ export async function collectMetrics(platform: Platform) {
 
 			// get the peer status and the ledger height
 			const peerStatus = await proxy.getPeersStatus(network_id, channel_genesis);
-
-			for (const peer of peerStatus) {
-				if (
-					peer.peer_type === 'PEER' &&
-					typeof peer.ledger_height_low === 'number'
-				) {
-					metric_ledger_height
-						.labels({
-							mspid: peer.mspid,
-							requests: peer.requests,
-							server_hostname: peer.server_hostname,
-							channel: channelInfo.channelname
-						})
-						.set(peer.ledger_height_low);
-				}
-			}
+			setLedgerHeight(peerStatus, channelInfo.channelname);
 		}
+	}
+}
+
+async function setLedgerHeight(peerStatus: any[], channel: string) {
+	for (const peer of peerStatus) {
+		if (peer.peer_type === 'PEER' && typeof peer.ledger_height_low === 'number') {
+			metric_ledger_height
+				.labels({
+					mspid: peer.mspid,
+					requests: peer.requests,
+					server_hostname: peer.server_hostname,
+					channel: channel
+				})
+				.set(peer.ledger_height_low);
+		}
+		let status = 0;
+		if (peer.status === 'UP') {
+			status = 1;
+		}
+		metric_node_up
+			.labels({ node: peer.server_hostname, mspid: peer.mspid })
+			.set(status);
 	}
 }

@@ -21,7 +21,8 @@ import { authCheckMiddleware } from './middleware/auth-check';
 import swaggerDocument from './swagger.json';
 import { ExplorerError } from './common/ExplorerError';
 import { localLoginStrategy } from './passport/local-login';
-import { metricRoutes } from './metrics/metricsRoutes';
+// eslint-disable-next-line spellcheck/spell-checker
+import { metricsRoutes } from './rest/metricsroutes';
 
 /**
  *
@@ -134,8 +135,10 @@ export class Explorer {
 
 			this.platforms.push(platform);
 
+			const metricsRouter = Express.Router();
 			// Initializing metrics services
-			await metricRoutes(this.app, platform);
+			await metricsRoutes(metricsRouter, platform);
+			this.app.use('/metrics', metricsRouter);
 		}
 	}
 
